@@ -1,0 +1,151 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f5f5f5;
+}
+
+#chessboard {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid black;
+    position: relative;
+    font-family: Arial, sans-serif;
+}
+
+.row {
+    display: flex;
+}
+
+.square {
+    width: 50px;
+    height: 50px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.white {
+    background-color: #f0d9b5;
+}
+
+.black {
+    background-color: #b58863;
+}
+
+.label-row, .row {
+    display: flex;
+}
+
+.label-cell {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    background-color: #eee;
+}
+
+.label-row .label-cell {
+    background-color: #ddd;
+}
+
+.highlight {
+    width: 50%;
+    height: 50%;
+    background-color: rgba(255, 0, 0, 0.5);
+    position: absolute;
+    top: 25%;
+    left: 25%;
+    border-radius: 50%;
+}
+
+
+
+
+/* Color changes for the squares */
+.square:nth-child(odd) {
+    background-color: #d0e8f2; /* Light blue */
+}
+
+.square:nth-child(even) {
+    background-color: #ffffff; /* White */
+}
+
+/* Piece styles */
+.piece {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5em; /* Larger piece size */
+}
+
+/* Color of pieces */
+.piece.white {
+    color: #f5d300; /* Gold */
+}
+
+.piece.black {
+    color: #606060; /* Gray */
+}
+
+/* Specific piece styles */
+.piece.pawn::before {
+    content: '\2659'; /* White pawn */
+}
+
+.piece.black.pawn::before {
+    content: '\265F'; /* Black pawn */
+}
+
+.piece.rook::before {
+    content: '\2656'; /* Rook */
+}
+
+.piece.black.rook::before {
+    content: '\2656'; /* Black rook */
+}
+
+.piece.knight::before {
+    content: '\2658'; /* Knight */
+}
+
+.piece.black.knight::before {
+    content: '\2658'; /* Black knight */
+}
+
+.piece.bishop::before {
+    content: '\2657'; /* Bishop */
+}
+
+.piece.black.bishop::before {
+    content: '\2657'; /* Black bishop */
+}
+
+.piece.queen::before {
+    content: '\2655'; /* Queen */
+}
+
+.piece.black.queen::before {
+    content: '\2655'; /* Black queen */
+}
+
+.piece.king::before {
+    content: '\2654'; /* King */
+}
+
+.piece.black.king::before {
+    content: '\2654'; /* Black king */
+}
+
+/* Highlight valid moves */
+.highlight {
+    position: absolute;
+    width: 20px; /* Adjusted size for visibility */
+    height: 20px; /* Adjusted size for visibility */
+    border-radius: 50%;
+    background-color: rgba(255, 0, 0, 0.5); /* Semi-transparent red */
+    pointer-events: none; /* Ensure highlight does not interfere with clicks */
+}

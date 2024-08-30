@@ -1,0 +1,285 @@
+const board = document.getElementById('chessboard');
+let selectedPiece = null;
+let selectedSquare = null;
+
+// Initialize the chessboard
+function initBoard() {
+    // Add column labels (a, b, c, ...)
+    const columnLabels = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const rowLabels = [8, 7, 6, 5, 4, 3, 2, 1];
+    
+    // Add column labels row
+    const topRow = document.createElement('div');
+    topRow.className = 'label-row';
+    topRow.appendChild(document.createElement('div')); // Empty corner cell
+    columnLabels.forEach(label => {
+        const labelCell = document.createElement('div');
+        labelCell.className = 'label-cell';
+        labelCell.textContent = label;
+        topRow.appendChild(labelCell);
+    });
+    board.appendChild(topRow);
+
+    for (let row = 0; row < 8; row++) {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'row';
+        
+        // Add row label
+        const rowLabelCell = document.createElement('div');
+        rowLabelCell.className = 'label-cell';
+        rowLabelCell.textContent = rowLabels[row];
+        rowDiv.appendChild(rowLabelCell);
+
+        for (let col = 0; col < 8; col++) {
+            const square = document.createElement('div');
+            square.className = 'square';
+            square.dataset.row = row;
+            square.dataset.col = col;
+            if ((row + col) % 2 === 0) {
+                square.className += ' white';
+            } else {
+                square.className += ' black';
+            }
+            
+            // Add initial pieces
+            if (row === 1) {
+                square.innerHTML = '<div class="piece black pawn"></div>'; // Black pawn
+            } else if (row === 6) {
+                square.innerHTML = '<div class="piece white pawn"></div>'; // White pawn
+            } else if (row === 0 || row === 7) {
+                const piece = getInitialPiece(row, col);
+                if (piece) {
+                    square.innerHTML = `<div class="piece ${row === 0 ? 'black' : 'white'} ${piece}"></div>`;
+                }
+            }
+
+            rowDiv.appendChild(square);
+        }
+        
+        board.appendChild(rowDiv);
+    }
+}
+
+// Get initial pieces for the chess setup
+function getInitialPiece(row, col) {
+    const pieces = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
+    return pieces[col];
+}
+
+// Handle square clicks
+board.addEventListener('click', function (e) {
+    const target = e.target.closest('.square');
+
+    if (target) {
+        if (selectedPiece) {
+            if (target !== selectedSquare) {
+                const from = getPosition(selectedSquare);
+                const to = getPosition(target);
+                if (isValidMove(selectedPiece, from, to)) {
+                    // Move piece to the new square
+                    target.innerHTML = selectedPiece.outerHTML;
+                    selectedSquare.innerHTML = '';
+                    clearHighlights();
+                    selectedPiece = null;
+                    selectedSquare = null;
+                    
+                    // Introduce a glitch with a 10% chance
+                    if (Math.random() < 0.1) {
+                        glitchBoard();
+                    }
+                } else {
+                    alert("Move not allowed!");
+                }
+            } else {
+                // Deselect piece
+                clearHighlights();
+                selectedPiece = null;
+                selectedSquare = null;
+            }
+        } else {
+            const piece = target.querySelector('.piece');
+            if (piece) {
+                // Select piece
+                selectedPiece = piece;
+                selectedSquare = target;
+                highlightMoves(selectedPiece, selectedSquare);
+            }
+        }
+    }
+});
+
+// Get the position of a square
+function getPosition(element) {
+    return {
+        row: parseInt(element.dataset.row),
+        col: parseInt(element.dataset.col)
+    };
+}
+
+// Check if a move is valid for a piece
+function isValidMove(piece, from, to) {
+    const dx = Math.abs(to.col - from.col);
+    const dy = Math.abs(to.row - from.row);
+    const pieceType = piece.classList.contains('rook') ? 'rook' :
+                       piece.classList.contains('knight') ? 'knight' :
+                       piece.classList.contains('bishop') ? 'bishop' :
+                       piece.classList.contains('queen') ? 'queen' :
+                       piece.classList.contains('king') ? 'king' :
+                       piece.classList.contains('white') ? 'whitePawn' :
+                       piece.classList.contains('black') ? 'blackPawn' :
+                       piece.classList.contains('pawn') ? 'pawn' : '';
+
+    switch (pieceType) {
+        case 'rook':
+            return (dx === 0 || dy === 0);
+        case 'knight':
+            return (dx === 2 && dy === 1) || (dx === 1 && dy === 2);
+        case 'bishop':
+            return dx === dy;
+        case 'queen':
+            return (dx === dy) || (dx === 0 || dy === 0);
+        case 'king':
+            return (dx <= 1 && dy <= 1);
+        case 'whitePawn':
+            return isValidWhitePawnMove(from, to);
+        case 'blackPawn':
+            return isValidBlackPawnMove(from, to);
+        case 'pawn':
+            // Generic pawn validation is not used
+            return false;
+    }
+    return false;
+}
+
+// Check if move is valid for white pawn
+function isValidWhitePawnMove(from, to) {
+    const dx = Math.abs(to.col - from.col);
+    const dy = from.row - to.row; // Moves down for white pawn
+    const targetSquare = document.querySelector(`.square[data-row="${to.row}"][data-col="${to.col}"]`);
+    const targetPiece = targetSquare ? targetSquare.querySelector('.piece') : null;
+    
+    // Forward move
+    if (dx === 0 && dy === 1 && !targetPiece) {
+        return true;
+    }
+    
+    // Diagonal capture
+    if (dx === 1 && dy === 1 && targetPiece && targetPiece.classList.contains('black')) {
+        return true;
+    }
+    
+    return false;
+}
+
+// Check if move is valid for black pawn
+function isValidBlackPawnMove(from, to) {
+    const dx = Math.abs(to.col - from.col);
+    const dy = to.row - from.row; // Moves up for black pawn
+    const targetSquare = document.querySelector(`.square[data-row="${to.row}"][data-col="${to.col}"]`);
+    const targetPiece = targetSquare ? targetSquare.querySelector('.piece') : null;
+    
+    // Forward move
+    if (dx === 0 && dy === 1 && !targetPiece) {
+        return true;
+    }
+    
+    // Diagonal capture
+    if (dx === 1 && dy === 1 && targetPiece && targetPiece.classList.contains('white')) {
+        return true;
+    }
+    
+    return false;
+}
+
+// Highlight valid moves for a selected piece
+function highlightMoves(piece, square) {
+    const { row: fromRow, col: fromCol } = getPosition(square);
+    const pieceType = piece.classList.contains('rook') ? 'rook' :
+                       piece.classList.contains('knight') ? 'knight' :
+                       piece.classList.contains('bishop') ? 'bishop' :
+                       piece.classList.contains('queen') ? 'queen' :
+                       piece.classList.contains('king') ? 'king' :
+                       piece.classList.contains('white') ? 'whitePawn' :
+                       piece.classList.contains('black') ? 'blackPawn' : '';
+
+    const directions = {
+        rook: [[1, 0], [0, 1], [-1, 0], [0, -1]],
+        bishop: [[1, 1], [1, -1], [-1, -1], [-1, 1]],
+        queen: [[1, 0], [0, 1], [-1, 0], [0, -1], [1, 1], [1, -1], [-1, -1], [-1, 1]],
+        king: [[1, 0], [0, 1], [-1, 0], [0, -1], [1, 1], [1, -1], [-1, -1], [-1, 1]],
+        knight: [[2, 1], [1, 2], [-1, 2], [-2, 1], [-2, -1], [-1, -2], [1, -2], [2, -1]],
+        whitePawn: [[0, -1], [1, -1], [-1, -1]], // Forward move and diagonal captures for white pawn
+        blackPawn: [[0, 1], [1, 1], [-1, 1]] // Forward move and diagonal captures for black pawn
+    };
+
+    // Clear existing highlights
+    clearHighlights();
+
+    // Highlight based on piece type
+    if (pieceType in directions) {
+        const moves = directions[pieceType];
+        for (let [dx, dy] of moves) {
+            let x = fromCol + dx;
+            let y = fromRow + dy;
+            while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                const targetSquare = document.querySelector(`.square[data-row="${y}"][data-col="${x}"]`);
+                if (targetSquare) {
+                    const targetPiece = targetSquare.querySelector('.piece');
+                    
+                    if (targetPiece && targetPiece.classList.contains(pieceType.split('Pawn')[0])) {
+                        break; // Don't highlight squares occupied by own pieces
+                    }
+                    
+                    // Create highlight dot
+                    const dot = document.createElement('div');
+                    dot.className = 'highlight';
+                    targetSquare.appendChild(dot);
+
+                    // Stop if there's a piece on the target square
+                    if (targetPiece) {
+                        break;
+                    }
+
+                    // Continue moving in the same direction if it's a rook, bishop, or queen
+                    if (pieceType === 'rook' || pieceType === 'bishop' || pieceType === 'queen') {
+                        x += dx;
+                        y += dy;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Clear all highlights
+function clearHighlights() {
+    document.querySelectorAll('.highlight').forEach(dot => dot.remove());
+}
+
+// Introduce a glitch on the board
+function glitchBoard() {
+    const squares = document.querySelectorAll('.square');
+    squares.forEach(square => {
+        const piece = square.querySelector('.piece');
+        if (piece) {
+            square.innerHTML = ''; // Remove the piece
+        }
+    });
+    
+    // Randomly place some pieces back
+    const pieces = ['white', 'black'];
+    for (let i = 0; i < 8; i++) {
+        const row = Math.floor(Math.random() * 8);
+        const col = Math.floor(Math.random() * 8);
+        const color = pieces[Math.floor(Math.random() * 2)];
+        const pieceType = ['pawn', 'rook', 'knight', 'bishop', 'queen', 'king'][Math.floor(Math.random() * 6)];
+        const square = document.querySelector(`.square[data-row="${row}"][data-col="${col}"]`);
+        if (square) {
+            square.innerHTML = `<div class="piece ${color} ${pieceType}"></div>`;
+        }
+    }
+}
+
+initBoard();

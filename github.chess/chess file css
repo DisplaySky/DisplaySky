@@ -62,16 +62,13 @@ body {
     border-radius: 50%;
 }
 
-
-
-
 /* Color changes for the squares */
 .square:nth-child(odd) {
-    background-color: #d0e8f2; /* Light blue */
+    background-color: #4CAF50; /* Green */
 }
 
 .square:nth-child(even) {
-    background-color: #ffffff; /* White */
+    background-color: #2196F3; /* Blue */
 }
 
 /* Piece styles */
@@ -80,6 +77,12 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 2.5em; /* Larger piece size */
+    line-height: 1; /* Remove extra space around text */
+    color: inherit; /* Inherit color from the piece class */
+    background: none; /* Remove background */
+    border: 2px solid transparent; /* Default border to transparent */
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.5); /* Add shadow for the border effect */
+    border-radius: 50%; /* Optional: Add rounded corners for the border */
 }
 
 /* Color of pieces */
